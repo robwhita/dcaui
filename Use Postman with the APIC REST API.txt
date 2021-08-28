@@ -1,0 +1,30 @@
+Task 1:
+
+{
+  "aaaUser": {
+    "attributes": {
+      "name": "{{apic_username}}",
+      "pwd": "{{apic_password}}"
+    }
+  }
+}
+
+
+
+
+{
+    "fvTenant": {
+        "attributes": {
+            "descr": "The Support Organization Tenant",
+            "dn": "uni/tn-Support",
+            "name": "Support",
+            "rn": "tn-Support",
+            "status": "created,modified"
+        }
+    }
+}
+
+
+
+
+

@@ -1,0 +1,123 @@
+task 1:
+
+    rsp = get_request(APIC_HOST, cookies, "/api/class/fvTenant.json")
+    rsp_dict = json.loads(rsp.text)
+    tenants = rsp_dict["imdata"]
+
+    print("\nNumber of tenants: {}".format(rsp_dict["totalCount"]))
+
+    for tenant in tenants:
+        print(tenant["fvTenant"]["attributes"]["name"])
+
+######################
+
+
+    # Create new security domain
+    secdom = {
+        "aaaDomain": {
+            "attributes": {"name": "SECDOM-PYTHON", "descr": "Python Managed Tenants"}
+        }
+    }
+    path = "/api/mo/uni/userext/domain-SECDOM-PYTHON.json"
+
+    rsp = post_request(APIC_HOST, cookies, path, json.dumps(secdom))
+
+##############################
+
+# Create new user for security domain
+user = {
+    "aaaUser": {
+        "attributes": {"name": "python", "pwd": "cisco123"},
+        "children": [
+            {
+                "aaaUserDomain": {
+                    "attributes": {"name": "all"},
+                    "children": [
+                        {
+                            "aaaUserRole": {
+                                "attributes": {
+                                    "name": "read-all",
+                                    "privType": "readPriv",
+                                }
+                            }
+                        }
+                    ],
+                }
+            },
+            {
+                "aaaUserDomain": {
+                    "attributes": {"name": "common"},
+                    "children": [
+                        {
+                            "aaaUserRole": {
+                                "attributes": {
+                                    "name": "read-all",
+                                    "privType": "readPriv",
+                                }
+                            }
+                        }
+                    ],
+                }
+            },
+            {
+                "aaaUserDomain": {
+                    "attributes": {"name": "SECDOM-PYTHON"},
+                    "children": [
+                        {
+                            "aaaUserRole": {
+                                "attributes": {
+                                    "name": "tenant-ext-admin",
+                                    "privType": "writePriv",
+                                }
+                            }
+                        }
+                    ],
+                }
+            },
+        ],
+    }
+}
+
+path = "/api/mo/uni/userext/user-python.json"
+
+rsp = post_request(APIC_HOST, cookies, path, json.dumps(user))
+
+
+########################
+
+task 2:
+
+
+def main():
+    cookies = get_cookies(APIC_HOST)
+
+    # Create new security domain
+    tenant = {
+        "fvTenant": {
+            "attributes": {"name": "SecurityTrial"},
+            "children": [{"aaaDomainRef": {"attributes": {"name": "SECDOM-PYTHON"}}}],
+        }
+    }
+    path = "/api/mo/uni/tn-SecurityTrial.json"
+
+    rsp = post_request(APIC_HOST, cookies, path, json.dumps(tenant))
+
+#########################
+
+task 3: 
+
+    # Create new VRF
+    vrf = {
+        "fvCtx": {
+            "attributes": {
+                "dn": "uni/tn-SecurityTrial/ctx-Security_VRF",
+                "name": "Security_VRF",
+                "rn": "ctx-Security_VRF",
+                "status": "created",
+            }
+        }
+    }
+    path = "/api/mo/uni/tn-SecurityTrial/ctx-Security_VRF.json"
+
+    rsp = post_request(APIC_HOST, cookies, path, json.dumps(vrf))
+
