@@ -1,0 +1,171 @@
+task 3:
+
+---
+- name: CREATE AND LIST TENANTS
+  hosts: apic
+
+  vars:
+    tenants_list:
+      - Customer_01
+      - Customer_02
+      - Customer_03
+      - Customer_04
+      - Customer_05
+
+  tasks:
+    - name: List All Tenants
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        state: query
+      delegate_to: localhost
+      register: apic_tenants
+
+    - name: Print Tenant List
+      debug:
+        msg: "{{ apic_tenants | json_query('current[].fvTenant.attributes.name') }}"
+
+    - name: Create Customer_0X Tenants
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ item }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenants_list }}"
+
+    - name: List All Tenants
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        state: query
+      delegate_to: localhost
+      register: apic_tenants
+
+    - name: Print Tenant List
+      debug:
+        msg: "{{ apic_tenants | json_query('current[].fvTenant.attributes.name') }}"
+
+
+task 4:
+
+---
+- name: DELETE AND LIST TENANTS
+  hosts: apic
+
+  tasks:
+    - name: Delete the Customer_05 Tenant
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "Customer_05"
+        state: absent
+      delegate_to: localhost
+
+    - name: List All Tenants
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        state: query
+      delegate_to: localhost
+      register: apic_tenants
+
+    - name: Build Actual Tenant List
+      set_fact:
+        apic_tenant_list: "{{ apic_tenants | json_query('current[].fvTenant.attributes.name') }}"
+
+    - name: Print Tenant List
+      debug:
+        var: apic_tenant_list
+
+    - name: Check that Customer_05 has been deleted
+      assert:
+        that: not 'Customer_05' in apic_tenant_list
+        fail_msg: "Customer_05 tenant exists on the APIC!"
+        success_msg: "Customer_05 tenant does not exist on the APIC."
+
+#########################################################
+
+---
+- name: DELETE AND LIST TENANTS
+  hosts: apic
+
+  tasks:
+    - name: Delete the Customer_04 Tenant
+      aci_rest:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        path: "/api/mo/uni/tn-Customer_04.json"
+        method: delete
+      delegate_to: localhost
+
+    - name: List All Tenants
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        state: query
+      delegate_to: localhost
+      register: apic_tenants
+
+    - name: Build Actual Tenant List
+      set_fact:
+        apic_tenant_list: "{{ apic_tenants | json_query('current[].fvTenant.attributes.name') }}"
+
+    - name: Print Tenant List
+      debug:
+        var: apic_tenant_list
+
+    - name: Check that Customer_04 has been deleted
+      assert:
+        that: not 'Customer_04' in apic_tenant_list
+        fail_msg: "Customer_04 tenant exists on the APIC!"
+        success_msg: "Customer_04 tenant does not exist on the APIC."
+
+
+task 5:
+
+    - name: Create Customer_0X Tenants
+      aci_rest:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        path: /api/mo/uni.json
+        method: post
+        content:
+          fvTenant:
+            attributes:
+              name: "{{ item }}"
+              descr: "{{ item }} - Tenant managed by Ansible."
+      delegate_to: localhost
+      loop: "{{ tenants_list }}"
