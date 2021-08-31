@@ -1,0 +1,19 @@
+task 1#
+
+git clone student@192.168.1x.122:/home/student/labs/section08/config-backup.git
+
+#################
+
+task 4:
+
+N9K1# configure terminal
+N9K1 (config)# event manager applet gitpush 
+N9K1 (config-applet)# event cli match "copy running-config startup-config" 
+N9K1 (config-applet)# action 2 cli copy running bootflash:running.latest 
+N9K1 (config-applet)# action 3 cli run guestshell python /home/admin/upload_git.py
+N9K1 (config-applet)# action 4 event-default 
+N9K1 (config-applet)# exit
+
+
+
+

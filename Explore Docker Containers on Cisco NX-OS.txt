@@ -1,0 +1,11 @@
+task1: 
+
+sudo docker run --name=alpinerun --rm --network host --cap-add SYS_ADMIN -it alpine 
+
+###################################
+
+sudo docker run -td -p 8080:80 --name nginx nginx:alpine
+
+################################
+
+sudo docker rm -f $(sudo docker ps -a -q)

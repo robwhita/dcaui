@@ -1,0 +1,17 @@
+task 1:
+
+cli("conf t ; interface loopback 100 ; description CREATED WITH PYTHON API")
+
+################
+
+print(mgmt0_data["TABLE_interface"]["ROW_interface"]["eth_ip_addr"])
+
+############################
+
+print(json.dumps(mgmt0_data, indent=4))
+
+#####################
+
+ssh_acl.permit(protocol="tcp", source="192.168.0.0/16", destination="any", dport_qualifier="eq", dport=22)
+
+

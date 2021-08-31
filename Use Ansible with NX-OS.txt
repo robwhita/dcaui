@@ -1,0 +1,23 @@
+task 1
+
+   - name: Print Facts
+      debug:
+        msg: 
+          - "Hostname: {{nxos_facts.ansible_facts.ansible_net_hostname}}"
+          - "Model: {{nxos_facts.ansible_facts.ansible_net_model}}"
+          - "Serial Number: {{nxos_facts.ansible_facts.ansible_net_serialnum}}"
+          - "Boot Image: {{nxos_facts.ansible_facts.ansible_net_image}}"
+
+
+################################
+
+task 2:
+
+    - name: SEND VPC CONFIGURATION
+      nxos_config:
+        src: "./outfiles/{{ inventory_hostname }}.cfg"
+
+    - name: ENABLE VPC ON PEER-LINK PORT CHANNEL
+      nxos_config:
+        src: "./outfiles/{{ inventory_hostname }}_vpc.cfg"
+

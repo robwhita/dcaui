@@ -1,0 +1,343 @@
+task 3:
+
+full script
+
+
+---
+
+- name: PRE-DEPLOYMENT SETUP AND VALIDATION
+  hosts: apic
+
+  tasks:
+
+    # All of these should be defined:
+    # ansible_host, ansible_port, ansible_user, ansible_password, validate_certs
+    # customer_name
+    - name: Test that connection details are defined
+      assert:
+        that:
+          - "ansible_host is defined"
+          - "ansible_port is defined"
+          - "ansible_user is defined"
+          - "ansible_password is defined"
+          - "validate_certs is defined"
+          - "customer_name is defined"
+        fail_msg: "Please ensure that these variables exist: ansible_host,
+          ansible_port, ansible_user, ansible_password, validate_certs
+          and customer_name!"
+        quiet: true
+
+    # These variables represent the data model and are used by
+    # the rest of the playbook to deploy the policy.
+    - name: Load Infrastructure Definition
+      include_vars:
+        file: "{{ customer_name }}.yml"
+
+
+- name: CREATE TENANT INFRASTRUCTURE
+  hosts: apic
+
+  tasks:
+
+    - name: Create Tenant
+      aci_tenant:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        description: "{{ tenant.description }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Create VRF
+      aci_vrf:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        vrf: "{{ item.name }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.vrfs }}"
+
+    - name: Create Bridge Domains
+      aci_bd:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        vrf: "{{ item.vrf }}"
+        bd: "{{ item.name }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.bridge_domains }}"
+
+    - name: Create Bridge Domain Subnets
+      aci_bd_subnet:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        bd: "{{ item.name }}"
+        gateway: "{{ item.subnet.split('/') | first }}"
+        mask: "{{ item.subnet.split('/') | last }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.bridge_domains }}"
+
+
+#####################
+
+task 4: 
+
+full playbook
+
+---
+
+- name: PRE-DEPLOYMENT SETUP AND VALIDATION
+  hosts: apic
+
+  tasks:
+
+    # All of these should be defined:
+    # host_vars: ansible_host, ansible_port,
+    #            ansible_user, ansible_password, validate_certs
+    # group_vars/all: customer_name
+    - name: Test that connection details are defined
+      assert:
+        that:
+          - "ansible_host is defined"
+          - "ansible_port is defined"
+          - "ansible_user is defined"
+          - "ansible_password is defined"
+          - "validate_certs is defined"
+          - "customer_name is defined"
+        fail_msg: "Please ensure that these variables exist: ansible_host,
+          ansible_port, ansible_user, ansible_password, validate_certs
+          and customer_name!"
+        quiet: true
+
+    # These variables represent the data model and are used by
+    # the rest of the playbook to deploy the policy.
+    - name: Load Infrastructure Definition
+      include_vars:
+        file: "{{ customer_name }}.yml"
+
+- name: CREATE APPLICATION PROFILES AND EPGS
+  hosts: apic
+
+  tasks:
+
+    - name: Create Application Profile
+      aci_ap:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        ap: "{{ item.name }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.apps }}"
+
+    - name: Create EPG
+      aci_epg:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        bd: "{{ item.bd }}"
+        ap: "{{ item.ap }}"
+        epg: "{{ item.name }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.epgs }}"
+
+    - name: Connect EPG to Domain
+      aci_epg_to_domain:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        ap: "{{ item.ap }}"
+        epg: "{{ item.name }}"
+        domain: "{{ item.domain }}"
+        domain_type: "{{ domains[item.domain].domain_type }}"
+        vm_provider: "{{ domains[item.domain].vm_provider }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.epgs }}"
+
+#####################
+
+task 5: 
+
+full playbook
+
+---
+
+- name: PRE-DEPLOYMENT SETUP AND VALIDATION
+  hosts: apic
+
+  tasks:
+
+    # All of these should be defined:
+    # host_vars: ansible_host, ansible_port,
+    #            ansible_user, ansible_password, validate_certs
+    # group_vars/all: customer_name
+    - name: Test that connection details are defined
+      assert:
+        that:
+          - "ansible_host is defined"
+          - "ansible_port is defined"
+          - "ansible_user is defined"
+          - "ansible_password is defined"
+          - "validate_certs is defined"
+          - "customer_name is defined"
+        fail_msg: "Please ensure that these variables exist: ansible_host,
+          ansible_port, ansible_user, ansible_password, validate_certs
+          and customer_name!"
+        quiet: true
+
+    # These variables represent the data model and are used by
+    # the rest of the playbook to deploy the policy.
+    - name: Load Infrastructure Definition
+      include_vars:
+        file: "{{ customer_name }}.yml"
+
+- name: CREATE FILTERS AND FILTER ENTRIES
+  hosts: apic
+
+  tasks:
+    - name: Create Filter
+      aci_filter:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        filter: "{{ item.name }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.filters }}"
+
+    - name: Create Filter Entry
+      aci_filter_entry:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        filter: "{{ item.name }}"
+        entry: "{{ item.entry }}"
+        ether_type: "{{ item.ethertype }}"
+        ip_protocol: "{{ item.ip_protocol }}"
+        dst_port_start: "{{ item.destination_from }}"
+        dst_port_end: "{{ item.destination_to }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.filters }}"
+
+- name: CREATE CONTRACTS AND CONTRACT SUBJECTS
+  hosts: apic
+
+  tasks:
+    - name: Create Contract
+      aci_contract:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        contract: "{{ item.name }}"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.contracts }}"
+
+    - name: Create Contract Subject
+      aci_contract_subject:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        contract: "{{ item.name }}"
+        subject: "{{ item.name }}-SUB"
+        description: "{{ item.description }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.contracts }}"
+
+    - name: Add Filter to Contract Subject
+      aci_contract_subject_to_filter:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        contract: "{{ item.name }}"
+        subject: "{{ item.name }}-SUB"
+        filter: "{{ item.filter }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.contracts }}"
+
+
+- name: BIND CONTRACTS TO EPGS
+  hosts: apic
+
+  tasks:
+    - name: Add Contract to EPG
+      aci_epg_to_contract:
+        host: "{{ ansible_host }}"
+        port: "{{ ansible_port }}"
+        user: "{{ ansible_user }}"
+        password: "{{ ansible_password }}"
+        validate_certs: "{{ validate_certs }}"
+
+        tenant: "{{ tenant.name }}"
+        ap: "{{ item.ap }}"
+        epg: "{{ item.epg }}"
+        contract: "{{ item.contract }}"
+        contract_type: "{{ item.type }}"
+        state: present
+      delegate_to: localhost
+      loop: "{{ tenant.contract_bindings }}"
