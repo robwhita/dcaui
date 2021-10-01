@@ -127,7 +127,7 @@ task 3:
     vrf = {
         "fvCtx": {
             "attributes": {
-                "dn": "uni/tn-Sales/ctx-Security_VRF",
+                "dn": "uni/tn-Sales/ctx-Sales_VRF",
                 "name": "Sales_VRF",
                 "rn": "ctx-Sales_VRF",
                 "status": "created",
