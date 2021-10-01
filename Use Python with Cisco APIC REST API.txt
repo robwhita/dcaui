@@ -121,3 +121,19 @@ task 3:
 
     rsp = post_request(APIC_HOST, cookies, path, json.dumps(vrf))
 
+#######################
+
+    # Create new VRF
+    vrf = {
+        "fvCtx": {
+            "attributes": {
+                "dn": "uni/tn-Sales/ctx-Security_VRF",
+                "name": "Sales_VRF",
+                "rn": "ctx-Sales_VRF",
+                "status": "created",
+            }
+        }
+    }
+    path = "/api/mo/uni/tn-Sales/ctx-Sales_VRF.json"
+
+    rsp = post_request(APIC_HOST, cookies, path, json.dumps(vrf))
