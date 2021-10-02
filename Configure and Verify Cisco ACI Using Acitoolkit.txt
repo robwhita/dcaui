@@ -130,3 +130,15 @@ resp = session.push_to_apic(tenant.get_url(), data=tenant.get_json())
 if not resp.ok:
     print(f'API return code {resp.status_code} with message {resp.text}')
     exit(1)
+
+# Delete Tenant
+choice = input('Would you like to delete the Tenant? (y/N): ')
+
+if choice.lower().strip() == 'y':
+    tenant.mark_as_deleted()
+    # Push configuration to APIC
+    resp = session.push_to_apic(tenant.get_url(), data=tenant.get_json())
+
+    if not resp.ok:
+        print(f'API return code {resp.status_code} with message {resp.text}')
+        exit(1)
