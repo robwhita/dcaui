@@ -121,4 +121,12 @@ epg_users = EPG(epg_users_name, app_profile)
 epg_users.add_bd(bridge_domain)
 epg_users.consume(contract_portal)
 
-# Delete Tenant
+# Connect and push configuration to APIC
+session = Session(APIC_HOST, APIC_USERNAME, APIC_PASSWORD)
+session.login()
+
+resp = session.push_to_apic(tenant.get_url(), data=tenant.get_json())
+
+if not resp.ok:
+    print(f'API return code {resp.status_code} with message {resp.text}')
+    exit(1)
