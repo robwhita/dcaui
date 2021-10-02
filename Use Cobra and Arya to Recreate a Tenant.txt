@@ -1,3 +1,40 @@
+##### Task 1 - full script
+
+import requests
+
+from credentials import *
+from sys import argv
+from cobra.mit.session import LoginSession
+from cobra.mit.access import MoDirectory
+
+# Disable warnings for insecure certificates (self-signed)
+requests.packages.urllib3.disable_warnings(
+    category=requests.packages.urllib3.exceptions.InsecureRequestWarning 
+)
+
+# Argument handling
+if len(argv) != 2:
+    print('Please provide exactly one parameter: the Tenant name!') 
+    exit() 
+
+tenant_name = argv[1]
+print('Checking the APIC for tenant {}'.format(tenant_name))
+
+# Login
+session = LoginSession(APIC_HOST, APIC_USERNAME, APIC_PASSWORD)
+moDir = MoDirectory(session)
+moDir.login()
+
+# Tenant lookup by DN
+tenant = moDir.lookupByDn('uni/tn-{}'.format(tenant_name))
+
+if tenant:
+    print('Found tenant {} with DN: {}'.format(tenant_name, tenant.dn)) 
+else:
+    print('Tenant {} does not exist!'.format(tenant_name))
+
+
+
 # Task 3
 
 from cobra.mit.session import LoginSession
