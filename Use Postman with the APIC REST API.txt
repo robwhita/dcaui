@@ -27,4 +27,14 @@ Task 1:
 
 
 
+####################################
 
+task 2:
+
+timestamp: 12:02:40 DEBUG method: POST url: https://apic/api/node/mo/uni/infra/vlanns-[Storage_VLANS]-static.json payload{"fvnsVlanInstP":{"attributes":{"dn":"uni/infra/vlanns-[Storage_VLANS]-static","name":"Storage_VLANS","allocMode":"static","rn":"vlanns-[Storage_VLANS]-static","status":"created"},"children":[{"fvnsEncapBlk":{"attributes":{"dn":"uni/infra/vlanns-[Storage_VLANS]-static/from-[vlan-2000]-to-[vlan-2500]","from":"vlan-2000","to":"vlan-2500","rn":"from-[vlan-2000]-to-[vlan-2500]","status":"created"},"children":[]}}]}} response: {"totalCount":"0","imdata":[]}
+
+
+
+###########################
+
+timestamp: 09:20:27 DEBUG method: POST url: https://apic/api/node/mo/uni/phys-Storage_PD/rsvlanNs.json payload{"infraRsVlanNs":{"attributes":{"tDn":"uni/infra/vlanns-[Storage_VLANS]-static"},"children":[]}} response: {"totalCount":"0","imdata":[]}
