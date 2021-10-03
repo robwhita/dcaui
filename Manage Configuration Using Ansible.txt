@@ -1,5 +1,21 @@
 task 1:
 
+######## Hosts file
+
+# The ACI Controllers
+[aci]
+apic ansible_host=apic
+
+[aci:vars]
+ansible_port=443
+# Login credentials
+ansible_user=admin
+ansible_password=1234QWer
+# Set to true for production setups that use trusted certificates!
+validate_certs=false
+
+##############playbook
+
 ---
 - name: CREATE AND LIST TENANTS
   hosts: apic
