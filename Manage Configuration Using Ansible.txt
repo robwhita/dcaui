@@ -134,7 +134,7 @@ task 2:
         fail_msg: "Customer_05 tenant exists on the APIC!"
         success_msg: "Customer_05 tenant does not exist on the APIC."
 
-task 3 #########################################################
+#########################################################
 
 ---
 - name: DELETE AND LIST TENANTS
@@ -180,7 +180,7 @@ task 3 #########################################################
         success_msg: "Customer_04 tenant does not exist on the APIC."
 
 
-task 4:
+task 3:
 
     - name: Create Customer_0X Tenants
       aci_rest:
