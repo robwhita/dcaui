@@ -1,4 +1,4 @@
-task 1
+task 2
 
 full script
 
@@ -103,7 +103,7 @@ full script
 
 #####################
 
-task 2: 
+task 3: 
 
 full playbook
 
@@ -192,10 +192,22 @@ full playbook
         state: present
       delegate_to: localhost
       loop: "{{ tenant.epgs }}"
+      
+ ##########################
+ 
+ data needed to add into snv_retail.yml file
+ 
+ domains:
+  vCenter_VMM:
+    domain_type: "vmm"
+    vm_provider: "vmware"
+ 
+ 
+ 
 
 #####################
 
-task 3: 
+task 4: 
 
 full playbook
 
