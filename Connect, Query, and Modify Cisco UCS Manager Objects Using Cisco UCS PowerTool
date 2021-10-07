@@ -1,0 +1,19 @@
+Task 2#############
+
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
+
+Install-Module 'Cisco.ucs.core' -RequiredVersion 2.5.2.2
+
+dir 'C:\Program Files\WindowsPowerShell\Modules' | Select-String Cisco.Ucs
+
+dir 'C:\Program Files\WindowsPowerShell\Modules\Cisco.UCSManager\'
+
+
+
+
+
