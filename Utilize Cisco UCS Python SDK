@@ -1,0 +1,9 @@
+task 4:
+
+
+backup_ucs(ucs, backup_type="config-system", file_dir="/home/student", file_name="backup-config-system.xml")
+
+backup_ucs(ucs, backup_type="config-all", file_dir="/home/student", file_name="backup-config-all.xml")
+
+import_ucs_backup(ucs, file_dir="/home/student/", file_name="backup-config-all.xml")
+
